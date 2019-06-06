@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import technicalblog.model.Post;
 import technicalblog.model.User;
+import technicalblog.model.UserProfile;
 import technicalblog.service.PostService;
 import technicalblog.service.UserService;
 
-import java.util.ArrayList;
+import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 public class UserController {
@@ -26,28 +28,37 @@ public class UserController {
     }
 
     @RequestMapping(value = "users/registration")
-    public String registration() {
+    public String registration(Model model) {
+        User user = new User();
+        UserProfile profile = new UserProfile();
+        user.setProfile(profile);
+        model.addAttribute("User", user);
         return "/users/registration";
     }
 
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
     public String registerUser(User user) {
+        userService.registerUser(user);
         return "redirect:/users/login";
     }
 
     @RequestMapping(value = "users/login", method = RequestMethod.POST)
-    public String loginUser(User user) {
-        if(userService.login(user)) {
+    public String loginUser(User user, HttpSession session) {
+        User existingUser = userService.login(user);
+        if(existingUser != null) {
+            session.setAttribute("loggeduser", existingUser);
             return "redirect:/posts";
         }
         else {
-            return "/users/login";
+            return "redirect:/users/login";
         }
     }
 
     @RequestMapping(value = "users/logout", method = RequestMethod.POST)
-    public String logout(Model model) {
-        ArrayList<Post> posts = postService.getAllPosts();
+    public String logout(Model model, HttpSession session) {
+        session.invalidate();
+
+        List<Post> posts = postService.getAllPosts();
 
         model.addAttribute("posts", posts);
         return "redirect:/";
