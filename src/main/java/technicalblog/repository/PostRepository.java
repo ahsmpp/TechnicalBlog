@@ -19,11 +19,6 @@ public class PostRepository {
         return resultList;
     }
 
-    public Post getLatestPost() {
-        EntityManager em = emf.createEntityManager();
-        return em.find(Post.class, 1);
-    }
-
     public Post createPost(Post newPost) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction transaction = em.getTransaction();
